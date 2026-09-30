@@ -1,7 +1,8 @@
 # wiki-masters auto pack opener
 
 <br />
-Script Node.js qui ouvre automatiquement les packs de [wiki-masters.com](https://www.wiki-masters.com) sur **ton propre compte**. Quand il n'y a plus de pack disponible, il attend 10 minutes (le temps de régénération) puis reprend. Il renouvelle aussi tout seul les tokens de session Supabase, pour pouvoir tourner en continu.
+
+Script Node.js qui ouvre automatiquement les packs [wiki-masters](https://www.wiki-masters.com) sur ton propre compte. Quand il n'y a plus de pack disponible, il attend 10 minutes (le temps de régénération) puis reprend. Il renouvelle aussi tout seul les tokens de session Supabase, pour pouvoir tourner en continu.  
 
 > **Avertissement** : utilise ce script uniquement sur ton propre compte et vérifie que l'automatisation est autorisée par les conditions d'utilisation du site. Le compte peut être sanctionné en cas d'abus. Tu es responsable de l'usage que tu en fais.
 
@@ -27,8 +28,8 @@ Script Node.js qui ouvre automatiquement les packs de [wiki-masters.com](https:/
 ## Installation
 
 ```bash
-git clone https://github.com/<ton-utilisateur>/<ton-depot>.git
-cd <ton-depot>
+git clone https://github.com/biosmosis/wiki-masters-auto-pack-opening.git
+cd wiki-masters-auto-pack-opening
 ```
 
 Il n'y a rien d'autre à installer.
