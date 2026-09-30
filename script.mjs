@@ -191,9 +191,9 @@ while (true) {
     } catch {
         errorData = { message: text };
     }
-  }
 
   log(`HTTP ${res.status} : ${errorData.error || errorData.message}`); 
+  }
 
   await countdown(COOLDOWN_MS);
 }
