@@ -146,9 +146,9 @@ async function countdown(ms) {
 process.on("SIGINT", () => { log("Arrêt demandé."); process.exit(0); });
 
 let opened = 0;
-while (true) {
-  let rarity_count = {};
+let rarity_count = {};
 
+while (true) {
   await ensureFresh();
 
   let res = await openPack();
