@@ -174,7 +174,7 @@ while (true) {
     appendFileSync(RESULTS_FILE, JSON.stringify(data) + "\n");
     log(`Pack #${opened} ouvert : ${data.cards.map(c => `${c.wikipedia_title} (${c.rarity})`).join(', ')}`);
     for (const c of data.cards) {
-        rarity_count[c.rarity] += (rarity_count[c.rarity] || 0) + 1;
+        rarity_count[c.rarity] = (rarity_count[c.rarity] || 0) + 1;
     }
     let formattedCount = Object.entries(rarity_count)
         .map(([rarity, count]) => `${rarity} : ${count}`)
