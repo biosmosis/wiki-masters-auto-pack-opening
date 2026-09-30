@@ -34,7 +34,7 @@ const ANON_KEY =
 const RESULTS_FILE = "packs.jsonl";
 const CHUNK_SIZE = 3180;
 const REFRESH_MARGIN_S = 120;
-const BETWEEN_PACKS_MS = 1500;
+const BETWEEN_PACKS_MS = 7000;
 
 const { values } = parseArgs({
   options: {
@@ -166,7 +166,7 @@ while (true) {
     let data;
     try { data = JSON.parse(text); } catch { data = { raw: text }; }
     appendFileSync(RESULTS_FILE, JSON.stringify(data) + "\n");
-    log(`Pack #${opened} ouvert : ${JSON.stringify(data).slice(0, 200)}`);
+    log(`Pack #${opened} ouvert : ${data.cards.map(c => `${c.wikipedia_title} (${c.rarity})`).join(', ')}`);
     await sleep(BETWEEN_PACKS_MS);
     continue;
   }
