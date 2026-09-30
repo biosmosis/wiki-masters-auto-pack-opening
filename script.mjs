@@ -147,6 +147,8 @@ process.on("SIGINT", () => { log("Arrêt demandé."); process.exit(0); });
 
 let opened = 0;
 while (true) {
+  let rarity_count = {};
+
   await ensureFresh();
 
   let res = await openPack();
@@ -164,13 +166,34 @@ while (true) {
   if (res.ok) {
     opened++;
     let data;
-    try { data = JSON.parse(text); } catch { data = { raw: text }; }
+    try { 
+        data = JSON.parse(text); 
+    } catch { 
+        data = { raw: text };
+    }
     appendFileSync(RESULTS_FILE, JSON.stringify(data) + "\n");
     log(`Pack #${opened} ouvert : ${data.cards.map(c => `${c.wikipedia_title} (${c.rarity})`).join(', ')}`);
+    for (const c of data.cards) {
+        rarity_count[c.rarity] += (rarity_count[c.rarity] || 0) + 1;
+    }
+    let formattedCount = Object.entries(rarity_count)
+        .map(([rarity, count]) => `${rarity} : ${count}`)
+        .join(', '); 
+    log(`Compte cartes : ${formattedCount}`);
+    
     await sleep(BETWEEN_PACKS_MS);
     continue;
+  } else {
+    let errorData;
+
+    try {
+        errorData = JSON.parse(text);
+    } catch {
+        errorData = { message: text };
+    }
   }
 
-  log(`HTTP ${res.status} : ${text.slice(0, 200)}`);
+  log(`HTTP ${res.status} : ${errorData.error || errorData.message}`); 
+
   await countdown(COOLDOWN_MS);
 }
