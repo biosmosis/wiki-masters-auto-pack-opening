@@ -32,13 +32,11 @@ git clone https://github.com/biosmosis/wiki-masters-auto-pack-opening.git
 cd wiki-masters-auto-pack-opening
 ```
 
-Il n'y a rien d'autre à installer.
-
 ## Configuration
 
 ### 1. Récupérer tes cookies de session
 
-1. Ouvre une **fenêtre de navigation privée** et connecte-toi sur <https://www.wiki-masters.com>.
+1. Ouvre une **fenêtre privée** et connecte-toi sur <https://www.wiki-masters.com>.
 2. Ouvre les outils de développement (`F12`).
 3. Va dans l'onglet **Application** (Chrome / Edge) ou **Stockage** (Firefox), puis **Cookies** → `https://www.wiki-masters.com`.
 4. Repère les deux cookies dont le nom commence par `sb-` et finit par `-auth-token.0` et `-auth-token.1`.
@@ -67,18 +65,7 @@ To1NTo...
 
 Les lignes vides et celles qui commencent par `#` sont ignorées.
 
-### 3. Protéger le fichier
-
-`cookies.txt` donne un accès complet à ton compte. Il ne doit **jamais** être publié sur GitHub. Ajoute-le à ton `.gitignore` avant ton premier commit :
-
-```gitignore
-cookies.txt
-packs.jsonl
-```
-
-Si tu as déjà commité un fichier contenant des cookies par erreur, considère la session comme compromise : déconnecte-toi sur le site pour l'invalider, et supprime le fichier de l'historique Git.
-
-### 4. Clé Supabase (optionnel)
+### 3. Clé Supabase (optionnel)
 
 Le script contient déjà la clé publique `anon` du projet Supabase du site (la même pour tous les visiteurs, elle n'ouvre aucun accès à ton compte). Si le site la change un jour, le renouvellement des tokens échouera avec une erreur de clé invalide. Dans ce cas, récupère la nouvelle valeur de l'en-tête `apikey` dans l'onglet **Réseau** des outils de développement (filtre `supabase.co`), puis passe-la au script :
 
@@ -89,7 +76,7 @@ export WM_SUPABASE_ANON_KEY='nouvelle_cle'
 ## Lancement
 
 ```bash
-node wm_auto.mjs
+node script.mjs
 ```
 
 Exemple de sortie :
