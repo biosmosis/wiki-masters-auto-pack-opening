@@ -2,14 +2,16 @@
 
 <br />
 
-Script Node.js qui ouvre automatiquement les packs [wiki-masters](https://www.wiki-masters.com) sur ton propre compte. Quand il n'y a plus de pack disponible, il attend 10 minutes (le temps de régénération) puis reprend. Il renouvelle aussi tout seul les tokens de session Supabase, pour pouvoir tourner en continu.  
+Script Node.js qui ouvre automatiquement les packs [wiki-masters](https://www.wiki-masters.com) sur un ou plusieurs comptes. Quand il n'y a plus de pack disponible, il attend 10 minutes (le temps de régénération) puis reprend. Il renouvelle aussi tout seul les tokens de session Supabase, pour pouvoir tourner en continu.  
 
 > **Avertissement** : utilise ce script uniquement sur ton propre compte et vérifie que l'automatisation est autorisée par les conditions d'utilisation du site. Le compte peut être sanctionné en cas d'abus. Tu es responsable de l'usage que tu en fais.
 
 ## Fonctionnalités
 
-- Ouvre tous les packs disponibles à la suite.
-- Pause automatique (10 min par défaut, configurable) quand il n'y en a plus, avec un compte à rebours dans la console.
+- Support multi-comptes : ouvre les packs pour chaque compte configuré.
+- Ouvre tous les packs disponibles à la suite pour chaque compte.
+- Suivi détaillé par compte : nom du compte, cartes tirées, total des cartes et répartition des raretés.
+- Pause automatique (10 min par défaut, configurable) quand il n'y a plus de pack, avec un compte à rebours dans la console.
 - Renouvellement automatique des tokens avant leur expiration (et en cas de réponse 401).
 - Cookies stockés dans un simple fichier texte, mis à jour à chaque renouvellement.
 - Résultats de chaque ouverture sauvegardés dans `packs.jsonl`.
@@ -47,20 +49,39 @@ L'usage d'une fenêtre privée est recommandé : à chaque renouvellement, Supab
 
 ### 2. Créer `cookies.txt`
 
-Crée un fichier `cookies.txt` à la racine du projet, avec un cookie par ligne, dans l'ordre `.0` puis `.1`.
+Crée un fichier `cookies.txt` à la racine du projet. Chaque compte est composé de 3 lignes :
+1. Le premier cookie (`.0`)
+2. Le deuxième cookie (`.1`)
+3. Le nom d'utilisateur (pseudo)
 
-Format avec les noms :
+Pour ajouter d'autres comptes, sépare-les par trois tirets (`---`).
+
+Format standard avec les préfixes :
 
 ```
 sb-cyrxjeppjqsxxjayfrur-auth-token.0=base64-eyJ...
 sb-cyrxjeppjqsxxjayfrur-auth-token.1=To1NTo...
+Compte1
+---
+sb-cyrxjeppjqsxxjayfrur-auth-token.0=base64-eyJ...
+sb-cyrxjeppjqsxxjayfrur-auth-token.1=To1NTo...
+Compte2
+---
+sb-cyrxjeppjqsxxjayfrur-auth-token.0=base64-eyJ...
+sb-cyrxjeppjqsxxjayfrur-auth-token.1=To1NTo...
+Compte3
 ```
 
-Ou simplement les valeurs :
+Ou simplement avec les valeurs brutes :
 
 ```
 base64-eyJ...
 To1NTo...
+Compte1
+---
+base64-eyJ...
+To1NTo...
+Compte2
 ```
 
 Les lignes vides et celles qui commencent par `#` sont ignorées.
@@ -82,11 +103,15 @@ node script.mjs
 Exemple de sortie :
 
 ```
-[14:02:11] Pack #1 ouvert : {...}
-[14:02:13] Pack #2 ouvert : {...}
-[14:02:15] HTTP 4xx : {...}
-[14:02:15] Plus de pack disponible. Pause de 10 min…
-[14:03:15]   … encore 9 min
+[14:02:11] 2 compte(s) chargé(s) : Compte1, Compte2
+[14:02:11] [Compte1] Pack #1 ouvert : Albert Einstein (common), Marie Curie (rare), Isaac Newton (epic)
+[14:02:11] [Compte1] Total cartes : 3 (common : 1, rare : 1, epic : 1)
+[14:02:18] [Compte1] HTTP 400 : Plus de pack disponible
+[14:02:19] [Compte2] Pack #1 ouvert : Alan Turing (common), Ada Lovelace (legendary)
+[14:02:19] [Compte2] Total cartes : 2 (common : 1, legendary : 1)
+[14:02:26] [Compte2] HTTP 400 : Plus de pack disponible
+[14:02:26] Plus de pack disponible sur l'ensemble des comptes. Pause de 10 min…
+[14:03:26]   … encore 9 min
 ```
 
 Arrête le programme à tout moment avec `Ctrl+C`.
@@ -132,12 +157,13 @@ pm2 logs wm-packs
 
 ## Fonctionnement
 
-1. Le script lit `cookies.txt`, reconstitue la session Supabase (`access_token`, `refresh_token`, expiration).
-2. Avant chaque requête, il vérifie l'expiration du token. S'il reste moins de 2 minutes, il le renouvelle et réécrit `cookies.txt` immédiatement (l'ancien `refresh_token` n'est plus valable ensuite).
-3. Il envoie une requête `POST` à `/api/packs/open`.
-   - Succès : la réponse est enregistrée et il enchaîne avec le pack suivant.
-   - `401` : il renouvelle le token et réessaie une fois.
-   - Toute autre erreur : il considère qu'il n'y a plus de pack, affiche le statut et le message, puis attend la durée du cooldown.
+1. Le script lit `cookies.txt` et reconstitue la session Supabase de chaque compte configuré (`access_token`, `refresh_token`, expiration, pseudo).
+2. Pour chaque compte, il ouvre tous les packs disponibles un par un :
+   - Avant chaque requête, il vérifie l'expiration du token et le renouvelle automatiquement si nécessaire (en réécrivant `cookies.txt` pour préserver les sessions).
+   - En cas de succès : les cartes obtenues sont enregistrées dans `packs.jsonl`, les statistiques (packs ouverts, total des cartes et raretés) sont mises à jour et affichées en console.
+   - En cas d'erreur `401` : il tente un renouvellement de token et réessaie une fois.
+   - En cas d'erreur de fin de packs (HTTP 4xx) : il passe au compte suivant.
+3. Une fois tous les comptes traités, il attend la durée du cooldown (10 min par défaut) avec un compte à rebours, puis recommence un nouveau cycle.
 
 ## Dépannage
 
